@@ -1,0 +1,93 @@
+#!/bin/bash
+# HALCON Progressions Command - Secondary Progressions
+# Usage:
+#   Structured: progressions --date YYYY-MM-DD --time HH:MM:SS --lat LAT --lon LON [--to DATE]
+#   Profile: progressions <name> [--to DATE]
+#   Natural Language: progressions mar 10 1990, kurnool india, 12:55 PM (manu)
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$SCRIPT_DIR/../claude-sdk-microservice"
+
+# Colors
+CYAN='\033[0;36m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# Show usage if no args
+if [ $# -eq 0 ]; then
+    echo -e "${CYAN}╔════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║     HALCON SECONDARY PROGRESSIONS         ║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo "Calculate secondary progressions (1 day = 1 year)"
+    echo ""
+    echo -e "${GREEN}Natural Language Usage:${NC}"
+    echo "  progressions Month Day Year, City Country, Time AM/PM (Name)"
+    echo ""
+    echo "Examples:"
+    echo "  progressions mar 10 1990, kurnool india, 12:55 PM (manu)"
+    echo "  progressions june 21 1985, london uk, 9:15 AM"
+    echo ""
+    echo -e "${GREEN}Profile Usage:${NC}"
+    echo "  progressions <profile-name> [--to DATE]"
+    echo ""
+    echo "Examples:"
+    echo "  progressions manu"
+    echo "  progressions manu --to 2025-12-31"
+    echo ""
+    echo -e "${GREEN}Structured Usage:${NC}"
+    echo "  progressions --date YYYY-MM-DD --time HH:MM:SS --lat LAT --lon LON [--to DATE]"
+    echo ""
+    echo "Required:"
+    echo "  --date, -d DATE     Birth date (YYYY-MM-DD)"
+    echo "  --time, -t TIME     Birth time (HH:MM:SS)"
+    echo "  --lat LAT           Birth latitude"
+    echo "  --lon LON           Birth longitude"
+    echo ""
+    echo "Optional:"
+    echo "  --to DATE           Date to progress to (default: today)"
+    echo "  --city CITY         Birth city"
+    echo "  --name NAME         Person's name"
+    echo ""
+    echo -e "${YELLOW}Note: Secondary progressions use 1 day = 1 year${NC}"
+    echo ""
+    exit 0
+fi
+
+# Detect if input is natural language, profile lookup, or structured
+FIRST_ARG="$1"
+
+# If first arg starts with -- or -, it's structured (flag-based)
+if [[ "$FIRST_ARG" =~ ^-{1,2} ]]; then
+    # Structured mode - use TypeScript CLI
+    cd "$PROJECT_DIR"
+    exec npx ts-node -r tsconfig-paths/register src/cli/progressions.ts "$@"
+# If only one or two args and first is a simple word (profile name), do profile lookup
+elif [[ "$FIRST_ARG" =~ ^[a-zA-Z0-9_-]+$ ]] && [[ $# -le 3 ]]; then
+    # Profile lookup mode (supports: name, name --to DATE)
+    cd "$PROJECT_DIR"
+    exec npx ts-node -r tsconfig-paths/register src/cli/progressions.ts "$@"
+else
+    # Natural language mode - parse with chart-nlu
+    echo -e "${YELLOW}🔍 Natural language mode detected${NC}" >&2
+    echo "" >&2
+
+    # Call chart-nlu to parse the natural language input
+    PARSED_ARGS=$("$PROJECT_DIR/chart-nlu" "$@")
+    EXIT_CODE=$?
+
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo -e "${RED}❌ Failed to parse natural language input${NC}" >&2
+        exit 1
+    fi
+
+    echo "" >&2
+    echo -e "${GREEN}📊 Calculating progressions...${NC}" >&2
+    echo "" >&2
+
+    # Forward parsed args to progressions TypeScript CLI
+    cd "$PROJECT_DIR"
+    eval exec npx ts-node -r tsconfig-paths/register src/cli/progressions.ts $PARSED_ARGS
+fi

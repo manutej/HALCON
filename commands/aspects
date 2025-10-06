@@ -1,0 +1,164 @@
+#!/bin/bash
+# HALCON Aspects Command - Current Planetary Aspects
+# Usage: aspects [--date YYYY-MM-DD] [--orb DEGREES]
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$SCRIPT_DIR/../claude-sdk-microservice"
+
+# Colors
+CYAN='\033[0;36m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# Default orb
+ORB=8
+
+# Parse arguments
+DATE=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --date|-d)
+            DATE="$2"
+            shift 2
+            ;;
+        --orb)
+            ORB="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo -e "${CYAN}╔════════════════════════════════════════════╗${NC}"
+            echo -e "${CYAN}║       HALCON PLANETARY ASPECTS             ║${NC}"
+            echo -e "${CYAN}╚════════════════════════════════════════════╝${NC}"
+            echo ""
+            echo "Calculate current planetary aspects (angular relationships)"
+            echo ""
+            echo "Usage: aspects [--date YYYY-MM-DD] [--orb DEGREES]"
+            echo ""
+            echo "Options:"
+            echo "  --date, -d DATE  Date for aspects (default: today)"
+            echo "  --orb DEGREES    Orb tolerance (default: 8)"
+            echo ""
+            echo "Aspects calculated:"
+            echo "  Conjunction (0°)   - Blending energies"
+            echo "  Sextile (60°)      - Opportunity"
+            echo "  Square (90°)       - Tension, challenge"
+            echo "  Trine (120°)       - Harmony, flow"
+            echo "  Opposition (180°)  - Polarity, awareness"
+            echo ""
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Unknown option: $1${NC}"
+            exit 1
+            ;;
+    esac
+done
+
+echo -e "${CYAN}╔════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║       HALCON PLANETARY ASPECTS             ║${NC}"
+echo -e "${CYAN}╚════════════════════════════════════════════╝${NC}"
+echo ""
+
+# Get current transits
+cd "$PROJECT_DIR"
+
+if [ -n "$DATE" ]; then
+    echo -e "${GREEN}Aspects for: $DATE${NC}"
+else
+    echo -e "${GREEN}Current Aspects${NC}"
+fi
+echo -e "${GREEN}Orb: ±${ORB}°${NC}"
+echo ""
+
+# Fetch planetary positions
+POSITIONS=$(npx ts-node -r tsconfig-paths/register -e "
+import { AstroDataFetcher } from './src/services/astro-analysis/astro-data-fetcher';
+
+async function getPositions() {
+  const fetcher = new AstroDataFetcher();
+  const date = '${DATE}' ? new Date('${DATE}') : new Date();
+  const result = await fetcher.fetchExtendedData({
+    date,
+    planets: ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']
+  });
+
+  if (result.success && result.data) {
+    const positions = {};
+    ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'].forEach(p => {
+      if (result.data[p]) {
+        positions[p] = result.data[p].longitude;
+      }
+    });
+    console.log(JSON.stringify(positions));
+  }
+}
+
+getPositions().catch(console.error);
+" 2>/dev/null)
+
+# Calculate aspects using Node.js
+npx ts-node -r tsconfig-paths/register -e "
+const positions = $POSITIONS;
+const orb = ${ORB};
+
+const aspectTypes = [
+  { name: 'Conjunction', angle: 0, orb: orb, symbol: '☌', color: '33' },
+  { name: 'Sextile', angle: 60, orb: orb, symbol: '⚹', color: '32' },
+  { name: 'Square', angle: 90, orb: orb, symbol: '□', color: '31' },
+  { name: 'Trine', angle: 120, orb: orb, symbol: '△', color: '36' },
+  { name: 'Opposition', angle: 180, orb: orb, symbol: '☍', color: '35' }
+];
+
+function calculateAspect(lon1, lon2) {
+  let diff = Math.abs(lon1 - lon2);
+  if (diff > 180) diff = 360 - diff;
+  return diff;
+}
+
+const planets = Object.keys(positions);
+const aspects = [];
+
+for (let i = 0; i < planets.length; i++) {
+  for (let j = i + 1; j < planets.length; j++) {
+    const p1 = planets[i];
+    const p2 = planets[j];
+    const angle = calculateAspect(positions[p1], positions[p2]);
+
+    for (const aspectType of aspectTypes) {
+      const diff = Math.abs(angle - aspectType.angle);
+      if (diff <= aspectType.orb) {
+        aspects.push({
+          planet1: p1,
+          planet2: p2,
+          aspect: aspectType.name,
+          symbol: aspectType.symbol,
+          exactAngle: aspectType.angle,
+          actualAngle: angle.toFixed(2),
+          orb: diff.toFixed(2),
+          color: aspectType.color
+        });
+      }
+    }
+  }
+}
+
+// Sort by orb (most exact first)
+aspects.sort((a, b) => parseFloat(a.orb) - parseFloat(b.orb));
+
+if (aspects.length === 0) {
+  console.log('No major aspects found within orb.');
+} else {
+  console.log('Major Aspects:');
+  console.log('═'.repeat(70));
+  aspects.forEach(a => {
+    const colorCode = \`\\x1b[\${a.color}m\`;
+    const resetCode = '\\x1b[0m';
+    const orbStr = a.orb === '0.00' ? 'EXACT' : \`±\${a.orb}°\`;
+    console.log(\`\${colorCode}\${a.symbol} \${a.planet1.padEnd(10)} \${a.aspect.padEnd(12)} \${a.planet2.padEnd(10)} \${orbStr}\${resetCode}\`);
+  });
+  console.log('═'.repeat(70));
+  console.log(\`\\nTotal: \${aspects.length} aspects found\`);
+}
+" 2>/dev/null

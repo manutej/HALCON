@@ -1,0 +1,81 @@
+#!/bin/bash
+# HALCON - Cosmic Productivity Command Center
+# Main command router for all HALCON astrological tools
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Colors
+CYAN='\033[0;36m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+MAGENTA='\033[0;35m'
+NC='\033[0m'
+
+show_banner() {
+    echo -e "${CYAN}"
+    echo "╔═══════════════════════════════════════════════════════════════╗"
+    echo "║                                                               ║"
+    echo "║    ██╗  ██╗ █████╗ ██╗      ██████╗ ██████╗ ███╗   ██╗      ║"
+    echo "║    ██║  ██║██╔══██╗██║     ██╔════╝██╔═══██╗████╗  ██║      ║"
+    echo "║    ███████║███████║██║     ██║     ██║   ██║██╔██╗ ██║      ║"
+    echo "║    ██╔══██║██╔══██║██║     ██║     ██║   ██║██║╚██╗██║      ║"
+    echo "║    ██║  ██║██║  ██║███████╗╚██████╗╚██████╔╝██║ ╚████║      ║"
+    echo "║    ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝      ║"
+    echo "║                                                               ║"
+    echo "║         Cosmic Productivity & Astrological Insights          ║"
+    echo "║                                                               ║"
+    echo "╚═══════════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+show_help() {
+    show_banner
+    echo ""
+    echo -e "${GREEN}Available Commands:${NC}"
+    echo ""
+    echo -e "  ${CYAN}transits${NC}       Show current planetary positions"
+    echo -e "  ${CYAN}chart${NC}          Generate natal birth chart"
+    echo -e "  ${CYAN}progressions${NC}   Calculate secondary progressions"
+    echo -e "  ${CYAN}aspects${NC}        Show current planetary aspects"
+    echo ""
+    echo -e "${GREEN}Usage:${NC}"
+    echo "  halcon <command> [options]"
+    echo "  halcon transits"
+    echo "  halcon chart --date 1990-01-15 --time 14:30:00 --lat 40.7128 --lon -74.0060"
+    echo "  halcon progressions --date 1985-06-21 --time 09:15:00 --lat 51.5074 --lon -0.1278"
+    echo "  halcon aspects --orb 6"
+    echo ""
+    echo -e "${GREEN}Get Help:${NC}"
+    echo "  halcon <command> --help    Show detailed help for a command"
+    echo ""
+    echo -e "${MAGENTA}✨ Powered by ephemeris.fyi + Swiss Ephemeris${NC}"
+    echo ""
+}
+
+# Main command router
+COMMAND=$1
+shift
+
+case "$COMMAND" in
+    transits)
+        exec "$SCRIPT_DIR/transits" "$@"
+        ;;
+    chart)
+        exec "$SCRIPT_DIR/chart" "$@"
+        ;;
+    progressions)
+        exec "$SCRIPT_DIR/progressions" "$@"
+        ;;
+    aspects)
+        exec "$SCRIPT_DIR/aspects" "$@"
+        ;;
+    help|--help|-h|"")
+        show_help
+        ;;
+    *)
+        echo -e "${YELLOW}Unknown command: $COMMAND${NC}"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac

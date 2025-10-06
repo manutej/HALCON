@@ -1,0 +1,20 @@
+#!/bin/bash
+# HALCON Transits Command - Current Planetary Positions
+# Usage: transits [--date YYYY-MM-DD]
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$SCRIPT_DIR/../claude-sdk-microservice"
+
+# Colors
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Show header
+echo -e "${CYAN}╔════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║        HALCON PLANETARY TRANSITS           ║${NC}"
+echo -e "${CYAN}╚════════════════════════════════════════════╝${NC}"
+echo ""
+
+# Forward to transits CLI
+cd "$PROJECT_DIR"
+exec ./transits "$@"
