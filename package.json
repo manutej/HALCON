@@ -6,20 +6,19 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:verify": "jest --coverage --watchAll=false",
-    "test:unit": "jest --testPathPattern=__tests__/unit",
-    "test:integration": "jest --testPathPattern=__tests__/integration",
-    "test:e2e": "playwright test",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:verify": "vitest run",
+    "test:unit": "vitest run --dir src/__tests__/unit",
+    "test:integration": "vitest run --dir src/__tests__/integration",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format": "prettier --write \"src/**/*.{ts,json,md}\"",
     "setup": "npm install && npm run typecheck && npm run test:verify"
   },
   "keywords": [
@@ -37,6 +36,7 @@
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
+    "@tsconfig/node20": "^20.1.6",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.6",
     "@types/react": "^18.2.46",
@@ -44,6 +44,8 @@
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.33.2",
@@ -54,19 +56,38 @@
     "prettier": "^3.1.1",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10"
+    "vite": "^5.0.10",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.1",
     "dotenv": "^16.3.1",
     "i18next": "^23.7.13",
+    "i18next-fs-backend": "^2.6.0",
+    "ora": "^9.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^14.0.0",
+    "swisseph": "^0.5.17",
     "zustand": "^4.4.7"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
-  }
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manutej/HALCON.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manutej/HALCON/issues"
+  },
+  "homepage": "https://github.com/manutej/HALCON#readme"
 }

@@ -40,9 +40,12 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@lib/*": ["src/lib/*"],
-      "@components/*": ["src/components/*"],
-      "@tests/*": ["src/__tests__/*"]
+      "@/lib/*": ["src/lib/*"],
+      "@/modules/*": ["src/modules/*"],
+      "@/commands/*": ["src/commands/*"],
+      "@/mcp/*": ["src/mcp/*"],
+      "@/types/*": ["src/types/*"],
+      "@/tests/*": ["src/__tests__/*"]
     }
   },
   "include": [
@@ -54,6 +57,7 @@
   "exclude": [
     "node_modules",
     "dist",
+    "claude-sdk-microservice",
     "**/*.spec.ts",
     "**/*.test.ts"
   ]
