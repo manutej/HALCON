@@ -5,9 +5,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "bin": {
+    "halcon-chart": "./bin/chart.js",
+    "halcon-houses": "./bin/houses.js"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
+    "chart": "tsx src/commands/chart.ts",
+    "houses": "tsx src/commands/houses.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",

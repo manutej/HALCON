@@ -7,6 +7,8 @@
  */
 
 import swisseph from 'swisseph';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import type {
   ChartData,
   ChartOptions,
@@ -18,8 +20,10 @@ import type {
 } from './types';
 import { getZodiacSign, getSignDegree, SwissEphPlanet } from './types';
 
-// Initialize Swiss Ephemeris
-swisseph.swe_set_ephe_path(__dirname + '/../../../node_modules/swisseph/ephe');
+// Initialize Swiss Ephemeris (ESM-compatible)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+swisseph.swe_set_ephe_path(join(__dirname, '../../../node_modules/swisseph/ephe'));
 
 /**
  * Calculate complete chart data
