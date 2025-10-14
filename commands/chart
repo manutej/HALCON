@@ -1,11 +1,9 @@
 #!/bin/bash
 # HALCON Chart Command - Generate Natal Chart
-# Usage:
-#   Structured: chart --date YYYY-MM-DD --time HH:MM:SS --lat LAT --lon LON [options]
-#   Natural Language: chart mar 10 1990, kurnool india, 12:55 PM (manu)
+# Now uses the new TypeScript implementation with Swiss Ephemeris
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_DIR="$SCRIPT_DIR/../claude-sdk-microservice"
+PROJECT_DIR="$SCRIPT_DIR/.."
 
 # Colors
 CYAN='\033[0;36m'
@@ -22,68 +20,37 @@ if [ $# -eq 0 ]; then
     echo ""
     echo "Generate a natal chart with planetary positions"
     echo ""
-    echo -e "${GREEN}Natural Language Usage:${NC}"
-    echo "  chart Month Day Year, City Country, Time AM/PM (Name)"
+    echo -e "${GREEN}Profile Usage:${NC}"
+    echo "  chart <profile_name>"
     echo ""
     echo "Examples:"
-    echo "  chart mar 10 1990, kurnool india, 12:55 PM (manu)"
-    echo "  chart june 21 1985, london uk, 9:15 AM"
-    echo "  chart dec 25 2000, new york usa, 6:30 PM local time"
+    echo "  chart manu"
+    echo "  chart melo"
     echo ""
-    echo -e "${GREEN}Structured Usage:${NC}"
-    echo "  chart --date YYYY-MM-DD --time HH:MM:SS --lat LAT --lon LON [options]"
+    echo -e "${GREEN}Direct Usage:${NC}"
+    echo "  chart <date> <time> --latitude LAT --longitude LON [options]"
     echo ""
     echo "Required:"
-    echo "  --date, -d DATE     Birth date (YYYY-MM-DD)"
-    echo "  --time, -t TIME     Birth time (HH:MM:SS)"
-    echo "  --lat LAT           Birth latitude"
-    echo "  --lon LON           Birth longitude"
+    echo "  date                Birth date (YYYY-MM-DD or 'now')"
+    echo "  time                Birth time (HH:MM:SS)"
+    echo "  --latitude LAT      Birth latitude"
+    echo "  --longitude LON     Birth longitude"
     echo ""
     echo "Optional:"
-    echo "  --name NAME         Chart name"
-    echo "  --city CITY         Birth city"
-    echo "  --format FORMAT     Output format: simple, detailed, json"
-    echo "  --houses SYSTEM     House system: placidus, equal, whole-sign"
+    echo "  --location NAME     Location name"
+    echo "  --house-system SYS  House system (placidus, koch, equal, whole-sign)"
+    echo "  --json              Output as JSON"
+    echo "  --no-chiron         Exclude Chiron"
+    echo "  --no-lilith         Exclude Lilith"
+    echo "  --no-nodes          Exclude lunar nodes"
     echo ""
-    echo "Structured Examples:"
-    echo "  chart --date 1990-01-15 --time 14:30:00 --lat 40.7128 --lon -74.0060"
-    echo "  chart -d 1985-06-21 -t 09:15:00 --lat 51.5074 --lon -0.1278 --city London"
+    echo "Direct Examples:"
+    echo "  chart 1990-03-10 12:55:00 --latitude 15.83 --longitude 78.04 --location \"Kurnool, India\""
+    echo "  chart now --latitude 40.7128 --longitude -74.0060"
     echo ""
     exit 0
 fi
 
-# Detect if input is natural language, profile lookup, or structured
-FIRST_ARG="$1"
-
-# If first arg starts with -- or -, it's structured (flag-based)
-if [[ "$FIRST_ARG" =~ ^-{1,2} ]]; then
-    # Structured mode - use TypeScript CLI
-    cd "$PROJECT_DIR"
-    exec npx ts-node -r tsconfig-paths/register src/cli/chart.ts "$@"
-# If first arg is a simple word (profile name) and optionally followed by flags
-elif [[ "$FIRST_ARG" =~ ^[a-zA-Z0-9_-]+$ ]] && ([[ $# -eq 1 ]] || [[ "$2" =~ ^-{1,2} ]]); then
-    # Profile lookup mode (with or without flags)
-    cd "$PROJECT_DIR"
-    exec npx ts-node -r tsconfig-paths/register src/cli/chart.ts "$@"
-else
-    # Natural language mode - parse with chart-nlu
-    echo -e "${YELLOW}🔍 Natural language mode detected${NC}" >&2
-    echo "" >&2
-
-    # Call chart-nlu to parse the natural language input
-    PARSED_ARGS=$("$PROJECT_DIR/chart-nlu" "$@")
-    EXIT_CODE=$?
-
-    if [ $EXIT_CODE -ne 0 ]; then
-        echo -e "${RED}❌ Failed to parse natural language input${NC}" >&2
-        exit 1
-    fi
-
-    echo "" >&2
-    echo -e "${GREEN}📊 Generating chart...${NC}" >&2
-    echo "" >&2
-
-    # Forward parsed args to chart TypeScript CLI
-    cd "$PROJECT_DIR"
-    eval exec npx ts-node -r tsconfig-paths/register src/cli/chart.ts $PARSED_ARGS
-fi
+# Call new TypeScript implementation
+cd "$PROJECT_DIR"
+exec npm run chart -- "$@"

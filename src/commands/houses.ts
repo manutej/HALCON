@@ -10,6 +10,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { calculateChart } from '../lib/swisseph/index.js';
 import type { GeoCoordinates, HouseSystem } from '../lib/swisseph/types.js';
+import { getProfileManager } from '../lib/profiles/index.js';
 
 const program = new Command();
 
@@ -34,28 +35,65 @@ program
         return;
       }
 
-      // Validate required options for calculations
-      if (!options.latitude || !options.longitude) {
-        console.error(chalk.red('❌ --latitude and --longitude are required for house calculations'));
-        console.log(chalk.yellow('Use --list-systems to see available house systems without calculating'));
-        process.exit(1);
+      let dateTime: Date;
+      let location: GeoCoordinates;
+
+      // Check if dateArg is a profile name (simple word, not a date)
+      const isProfileName = /^[a-zA-Z0-9_-]+$/.test(dateArg) && dateArg !== 'now';
+
+      if (isProfileName) {
+        // Try to load profile
+        const profileManager = getProfileManager();
+        const profile = profileManager.getProfile(dateArg);
+
+        if (!profile) {
+          console.error(chalk.red(`❌ Profile "${dateArg}" not found`));
+          console.log(chalk.yellow('Available profiles:'));
+          const profiles = profileManager.listProfiles();
+          if (profiles.length === 0) {
+            console.log(chalk.gray('  No profiles saved'));
+          } else {
+            profiles.forEach(p => {
+              console.log(chalk.cyan(`  ${p.name} - ${p.location}`));
+            });
+          }
+          process.exit(1);
+        }
+
+        console.log(chalk.green(`✓ Loaded profile: ${profile.name}`));
+
+        // Use profile data
+        dateTime = new Date(`${profile.date}T${profile.time}`);
+        location = {
+          latitude: profile.latitude,
+          longitude: profile.longitude,
+          name: profile.location
+        };
+      } else {
+        // Validate required options for calculations
+        if (!options.latitude || !options.longitude) {
+          console.error(chalk.red('❌ --latitude and --longitude are required for house calculations'));
+          console.log(chalk.yellow('Use --list-systems to see available house systems'));
+          console.log(chalk.yellow('Or use a profile: halcon-houses manu'));
+          process.exit(1);
+        }
+
+        // Parse date/time from arguments
+        const dateStr = dateArg === 'now' ? new Date().toISOString() : dateArg;
+        dateTime = new Date(`${dateStr}T${timeArg}`);
+
+        if (isNaN(dateTime.getTime())) {
+          console.error(chalk.red('❌ Invalid date/time'));
+          process.exit(1);
+        }
+
+        // Parse location from options
+        location = {
+          latitude: parseFloat(options.latitude),
+          longitude: parseFloat(options.longitude),
+          name: options.location
+        };
       }
-
-      // Parse date/time
-      const dateStr = dateArg === 'now' ? new Date().toISOString() : dateArg;
-      const dateTime = new Date(`${dateStr}T${timeArg}`);
-
-      if (isNaN(dateTime.getTime())) {
-        console.error(chalk.red('❌ Invalid date/time'));
-        process.exit(1);
-      }
-
-      // Parse location
-      const location: GeoCoordinates = {
-        latitude: parseFloat(options.latitude),
-        longitude: parseFloat(options.longitude),
-        name: options.location
-      };
 
       if (options.compare) {
         await compareHouseSystems(dateTime, location);

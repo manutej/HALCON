@@ -1,11 +1,9 @@
 #!/bin/bash
-# HALCON Houses Command - House Cusp Calculation
-# Usage:
-#   houses <profile-name> [--system SYSTEM]
-#   houses --date YYYY-MM-DD --time HH:MM:SS --lat LAT --lon LON [--system SYSTEM]
+# HALCON Houses Command - Calculate House Cusps
+# Now uses the new TypeScript implementation with Swiss Ephemeris
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_DIR="$SCRIPT_DIR/../claude-sdk-microservice"
+PROJECT_DIR="$SCRIPT_DIR/.."
 
 # Colors
 CYAN='\033[0;36m'
@@ -14,50 +12,38 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-# Show usage if no args or help requested
-if [ $# -eq 0 ] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+# Show usage if no args
+if [ $# -eq 0 ]; then
     echo -e "${CYAN}╔════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║         HALCON HOUSE CALCULATION          ║${NC}"
+    echo -e "${CYAN}║         HALCON HOUSE CUSPS                 ║${NC}"
     echo -e "${CYAN}╚════════════════════════════════════════════╝${NC}"
     echo ""
-    echo "Calculate astrological house cusps using different systems"
+    echo "Calculate house cusps and angles"
     echo ""
     echo -e "${GREEN}Profile Usage:${NC}"
-    echo "  houses <profile-name> [--system SYSTEM]"
+    echo "  houses <profile_name> [options]"
     echo ""
     echo "Examples:"
-    echo "  houses manu                       # Placidus houses (default)"
-    echo "  houses manu --system whole-sign   # Whole Sign houses"
-    echo "  houses manu --system equal        # Equal houses"
-    echo "  houses manu -v                    # With house meanings"
+    echo "  houses manu"
+    echo "  houses manu --compare"
+    echo "  houses manu --house-system whole-sign"
     echo ""
-    echo -e "${GREEN}Manual Usage:${NC}"
-    echo "  houses --date DATE --time TIME --lat LAT --lon LON [--system SYSTEM]"
+    echo -e "${GREEN}Direct Usage:${NC}"
+    echo "  houses <date> <time> --latitude LAT --longitude LON [options]"
     echo ""
-    echo "Required:"
-    echo "  --date, -d DATE     Birth date (YYYY-MM-DD)"
-    echo "  --time, -t TIME     Birth time (HH:MM:SS)"
-    echo "  --lat LATITUDE      Birth latitude"
-    echo "  --lon LONGITUDE     Birth longitude"
-    echo ""
-    echo "Optional:"
-    echo "  --system, -s SYSTEM House system (default: placidus)"
-    echo "  --verbose, -v       Show house meanings"
+    echo "Options:"
+    echo "  --list-systems      List all available house systems"
+    echo "  --compare           Compare multiple house systems"
+    echo "  --house-system SYS  House system (placidus, koch, equal, whole-sign)"
     echo "  --json              Output as JSON"
     echo ""
-    echo -e "${YELLOW}House Systems:${NC}"
-    echo "  placidus           Most popular, time-based (default)"
-    echo "  equal              Equal 30° divisions from ASC"
-    echo "  whole-sign         Each zodiac sign = one house"
-    echo "  koch               Birthplace system"
-    echo "  regiomontanus      Medieval system"
-    echo ""
-    echo "Manual Example:"
-    echo "  houses --date 1990-03-10 --time 12:55:00 --lat 15.83 --lon 78.04 --system koch"
+    echo "Direct Examples:"
+    echo "  houses 1990-03-10 12:55:00 --latitude 15.83 --longitude 78.04"
+    echo "  houses now --latitude 40.7128 --longitude -74.0060 --compare"
     echo ""
     exit 0
 fi
 
-# Forward to TypeScript CLI
+# Call new TypeScript implementation
 cd "$PROJECT_DIR"
-exec npx ts-node -r tsconfig-paths/register src/cli/houses.ts "$@"
+exec npm run houses -- "$@"

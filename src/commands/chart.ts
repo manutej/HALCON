@@ -10,6 +10,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { calculateChart } from '../lib/swisseph/index.js';
 import type { GeoCoordinates, ChartOptions } from '../lib/swisseph/types.js';
+import { getProfileManager } from '../lib/profiles/index.js';
 
 const program = new Command();
 
@@ -29,24 +30,61 @@ program
   .option('--json', 'Output as JSON')
   .action(async (dateArg, timeArg, options) => {
     try {
-      // Parse date
-      const dateStr = dateArg === 'now' ? new Date().toISOString() : dateArg;
-      const dateTime = new Date(`${dateStr}T${timeArg}`);
+      let dateTime: Date;
+      let location: GeoCoordinates;
 
-      if (isNaN(dateTime.getTime())) {
-        console.error(chalk.red('❌ Invalid date/time format'));
-        console.log(chalk.yellow('Examples:'));
-        console.log(chalk.cyan('  halcon-chart 1990-03-10 12:55:00'));
-        console.log(chalk.cyan('  halcon-chart now'));
-        process.exit(1);
+      // Check if dateArg is a profile name (simple word, not a date)
+      const isProfileName = /^[a-zA-Z0-9_-]+$/.test(dateArg) && dateArg !== 'now';
+
+      if (isProfileName) {
+        // Try to load profile
+        const profileManager = getProfileManager();
+        const profile = profileManager.getProfile(dateArg);
+
+        if (!profile) {
+          console.error(chalk.red(`❌ Profile "${dateArg}" not found`));
+          console.log(chalk.yellow('Available profiles:'));
+          const profiles = profileManager.listProfiles();
+          if (profiles.length === 0) {
+            console.log(chalk.gray('  No profiles saved'));
+          } else {
+            profiles.forEach(p => {
+              console.log(chalk.cyan(`  ${p.name} - ${p.location}`));
+            });
+          }
+          process.exit(1);
+        }
+
+        console.log(chalk.green(`✓ Loaded profile: ${profile.name}`));
+
+        // Use profile data
+        dateTime = new Date(`${profile.date}T${profile.time}`);
+        location = {
+          latitude: profile.latitude,
+          longitude: profile.longitude,
+          name: profile.location
+        };
+      } else {
+        // Parse date from arguments
+        const dateStr = dateArg === 'now' ? new Date().toISOString() : dateArg;
+        dateTime = new Date(`${dateStr}T${timeArg}`);
+
+        if (isNaN(dateTime.getTime())) {
+          console.error(chalk.red('❌ Invalid date/time format'));
+          console.log(chalk.yellow('Examples:'));
+          console.log(chalk.cyan('  halcon-chart 1990-03-10 12:55:00 --latitude 15.83 --longitude 78.04'));
+          console.log(chalk.cyan('  halcon-chart manu (using saved profile)'));
+          console.log(chalk.cyan('  halcon-chart now'));
+          process.exit(1);
+        }
+
+        // Parse location from options
+        location = {
+          latitude: parseFloat(options.latitude),
+          longitude: parseFloat(options.longitude),
+          name: options.location
+        };
       }
-
-      // Parse location
-      const location: GeoCoordinates = {
-        latitude: parseFloat(options.latitude),
-        longitude: parseFloat(options.longitude),
-        name: options.location
-      };
 
       // Parse options
       const chartOptions: ChartOptions = {
@@ -89,18 +127,18 @@ function displayChart(chart: any) {
 
   // Birth Info
   console.log(chalk.bold.yellow('📅 Birth Information:'));
-  console.log(chalk.white(`   Date: ${timestamp.toISOString().split('T')[0]}`));
-  console.log(chalk.white(`   Time: ${timestamp.toTimeString().split(' ')[0]} UTC`));
-  console.log(chalk.white(`   Location: ${location.name || 'Unknown'}`));
-  console.log(chalk.white(`   Coordinates: ${location.latitude.toFixed(2)}°N, ${location.longitude.toFixed(2)}°E`));
+  console.log(chalk.greenBright(`   Date: ${timestamp.toISOString().split('T')[0]}`));
+  console.log(chalk.greenBright(`   Time: ${timestamp.toTimeString().split(' ')[0]} UTC`));
+  console.log(chalk.greenBright(`   Location: ${location.name || 'Unknown'}`));
+  console.log(chalk.greenBright(`   Coordinates: ${location.latitude.toFixed(2)}°N, ${location.longitude.toFixed(2)}°E`));
   console.log();
 
   // Angles
   console.log(chalk.bold.yellow('🎯 Angles:'));
-  console.log(chalk.white(`   Ascendant (ASC): ${formatDegree(angles.ascendant)}`));
-  console.log(chalk.white(`   Midheaven (MC):  ${formatDegree(angles.midheaven)}`));
-  console.log(chalk.white(`   Descendant (DSC): ${formatDegree(angles.descendant)}`));
-  console.log(chalk.white(`   Imum Coeli (IC):  ${formatDegree(angles.imumCoeli)}`));
+  console.log(chalk.cyanBright(`   Ascendant (ASC): ${formatDegree(angles.ascendant)}`));
+  console.log(chalk.cyanBright(`   Midheaven (MC):  ${formatDegree(angles.midheaven)}`));
+  console.log(chalk.cyanBright(`   Descendant (DSC): ${formatDegree(angles.descendant)}`));
+  console.log(chalk.cyanBright(`   Imum Coeli (IC):  ${formatDegree(angles.imumCoeli)}`));
   console.log();
 
   // Planets
@@ -125,7 +163,7 @@ function displayChart(chart: any) {
       const deg = body.signDegree.toFixed(2).padStart(5);
       const retro = body.retrograde ? chalk.red('    R') : '     ';
 
-      console.log(chalk.white(`   ${symbol} ${name}  ${lon}°   ${sign}  ${deg}°${retro}`));
+      console.log(chalk.whiteBright(`   ${symbol} ${name}  ${lon}°   ${sign}  ${deg}°${retro}`));
     }
   });
 
@@ -138,7 +176,7 @@ function displayChart(chart: any) {
 
   houses.cusps.forEach((cusp: number, index: number) => {
     const houseNum = (index + 1).toString().padStart(2);
-    console.log(chalk.white(`   House ${houseNum}: ${formatDegree(cusp)}`));
+    console.log(chalk.magentaBright(`   House ${houseNum}: ${formatDegree(cusp)}`));
   });
 
   console.log(chalk.gray('   ' + '─'.repeat(40)));
