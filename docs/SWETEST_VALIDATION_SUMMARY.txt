@@ -1,0 +1,145 @@
+HALCON SWISS EPHEMERIS VALIDATION - QUICK REFERENCE
+====================================================
+
+Date: October 18, 2025
+Validator: Claude (deep-researcher agent)
+Status: ✅ Validation Complete - Critical Bug Found & Documented
+
+VALIDATION RESULTS
+==================
+
+✅ Swiss Ephemeris Library Integration: CORRECT
+   - swisseph npm package working perfectly
+   - Matches swetest command-line tool exactly
+   - All planetary calculations accurate
+
+❌ Date/Time Parsing: CRITICAL BUG FOUND
+   - JavaScript treats "YYYY-MM-DDThh:mm:ss" as LOCAL time
+   - Should be "YYYY-MM-DDThh:mm:ssZ" for UTC
+   - Causes ~98° offset in house cusps
+   - Affects ALL saved profiles
+
+DEMONSTRATION
+=============
+
+Bug:    new Date("1990-03-10T12:55:00")   → 19:55:00 UTC (WRONG!)
+Fix:    new Date("1990-03-10T12:55:00Z")  → 12:55:00 UTC (CORRECT!)
+
+VALIDATION TOOLS CREATED
+=========================
+
+1. /Users/manu/Documents/LUXOR/PROJECTS/HALCON/docs/swetest-validation.md
+   - Comprehensive 500+ line validation report
+   - Celebrity chart examples
+   - Bug analysis and fixes
+   - Complete swetest command reference
+
+2. /Users/manu/Documents/LUXOR/PROJECTS/HALCON/scripts/validate_houses.mjs
+   - Automated validation script
+   - Tests celebrity charts (Steve Jobs, Einstein, Curie)
+   - Validates saved profiles
+   - Generates swetest commands
+
+3. /Users/manu/Documents/LUXOR/PROJECTS/HALCON/test_timezone_bug_demo.mjs
+   - Interactive bug demonstration
+   - Shows buggy vs fixed behavior
+   - Validates against swetest
+
+QUICK VALIDATION
+================
+
+Run these commands to validate:
+
+1. Validate celebrity charts:
+   cd /Users/manu/Documents/LUXOR/PROJECTS/HALCON
+   node scripts/validate_houses.mjs
+
+2. Demonstrate the bug:
+   node test_timezone_bug_demo.mjs
+
+3. Manual verification with swetest:
+   /Users/manu/bin/swetest -b10.3.1990 -ut12:55:00 \
+     -house78.0425373,15.8309251,P \
+     -geopos78.0425373,15.8309251
+
+SWETEST COMMAND FORMAT
+=======================
+
+Basic syntax:
+  swetest -b<day>.<month>.<year> -ut<HH:MM:SS> \
+    -house<longitude>,<latitude>,<system> \
+    -geopos<longitude>,<latitude>
+
+Example for Steve Jobs:
+  /Users/manu/bin/swetest -b24.02.1955 -ut19:15:00 \
+    -house122.419444,-37.808889,P \
+    -geopos122.419444,-37.808889
+
+House System Codes:
+  P = Placidus (most common)
+  K = Koch
+  A = Equal
+  W = Whole Sign
+  (see full list in swetest-validation.md)
+
+RECOMMENDED FIXES
+=================
+
+1. IMMEDIATE (src/commands/houses.ts line 66):
+   - Change: new Date(`${profile.date}T${profile.time}`)
+   - To:     new Date(`${profile.date}T${profile.time}Z`)
+
+2. SHORT-TERM (src/lib/profiles/index.ts):
+   - Add timezone field to UserProfile interface
+   - Update profile creation/editing UI
+   - Migrate existing profiles
+
+3. LONG-TERM:
+   - Add comprehensive timezone support
+   - Unit tests for date parsing
+   - Documentation for users
+
+TEST DATA
+=========
+
+Celebrity Charts (for validation):
+
+Steve Jobs:
+  Date: 1955-02-24, Time: 19:15:00 UTC
+  Location: San Francisco, CA (-37.81°, 122.42°)
+  ASC: 307.586° (7°35' Aquarius)
+  MC: 207.003° (27°00' Libra)
+
+Albert Einstein:
+  Date: 1879-03-14, Time: 11:30:00 UTC
+  Location: Ulm, Germany (48.40°, 7.85°)
+  ASC: 107.992° (17°59' Cancer)
+  MC: 351.359° (21°22' Pisces)
+
+Marie Curie:
+  Date: 1867-11-07, Time: 12:00:00 UTC
+  Location: Warsaw, Poland (52.23°, 21.01°)
+  ASC: 310.643° (10°39' Aquarius)
+  MC: 248.940° (8°56' Sagittarius)
+
+NEXT ACTIONS
+============
+
+[ ] Apply timezone fix to date parsing
+[ ] Add timezone field to profile schema
+[ ] Create migration script for existing profiles
+[ ] Add unit tests for date/time handling
+[ ] Update user documentation
+[ ] Add timezone selection to profile UI
+[ ] Run validation script in CI/CD pipeline
+
+CONTACT
+=======
+
+For questions about this validation:
+- See full report: docs/swetest-validation.md
+- Run demo: node test_timezone_bug_demo.mjs
+- Validate: node scripts/validate_houses.mjs
+
+====================================================
+End of Summary

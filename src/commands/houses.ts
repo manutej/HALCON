@@ -62,8 +62,9 @@ program
 
         console.log(chalk.green(`✓ Loaded profile: ${profile.name}`));
 
-        // Use profile data
-        dateTime = new Date(`${profile.date}T${profile.time}`);
+        // Use profile data - FIXED: Add 'Z' to treat as UTC to prevent timezone issues
+        // Without 'Z', JavaScript treats the datetime as local time which causes house calculation errors
+        dateTime = new Date(`${profile.date}T${profile.time}Z`);
         location = {
           latitude: profile.latitude,
           longitude: profile.longitude,
@@ -79,8 +80,9 @@ program
         }
 
         // Parse date/time from arguments
+        // FIXED: Add 'Z' to treat as UTC to prevent timezone issues
         const dateStr = dateArg === 'now' ? new Date().toISOString() : dateArg;
-        dateTime = new Date(`${dateStr}T${timeArg}`);
+        dateTime = new Date(`${dateStr}T${timeArg}Z`);
 
         if (isNaN(dateTime.getTime())) {
           console.error(chalk.red('❌ Invalid date/time'));
