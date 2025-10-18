@@ -152,7 +152,7 @@ function displayChart(chart: any) {
   // Birth Info
   console.log(chalk.bold.yellow('📅 Birth Information:'));
   console.log(chalk.greenBright(`   Date: ${timestamp.toISOString().split('T')[0]}`));
-  console.log(chalk.greenBright(`   Time: ${timestamp.toTimeString().split(' ')[0]} UTC`));
+  console.log(chalk.greenBright(`   Time: ${timestamp.toISOString().split('T')[1].split('.')[0]} UTC`));
   console.log(chalk.greenBright(`   Location: ${location.name || 'Unknown'}`));
   console.log(chalk.greenBright(`   Coordinates: ${location.latitude.toFixed(2)}°N, ${location.longitude.toFixed(2)}°E`));
   console.log();
