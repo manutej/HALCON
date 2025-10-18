@@ -8,6 +8,7 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { DateTime } from 'luxon';
 import { calculateChart } from '../lib/swisseph/index.js';
 import type { GeoCoordinates, ChartOptions } from '../lib/swisseph/types.js';
 import { getProfileManager } from '../lib/profiles/index.js';
@@ -57,8 +58,31 @@ program
 
         console.log(chalk.green(`✓ Loaded profile: ${profile.name}`));
 
-        // Use profile data
-        dateTime = new Date(`${profile.date}T${profile.time}`);
+        // Use profile data with timezone conversion
+        if (profile.timezone) {
+          // Convert local time to UTC
+          const localDateTime = DateTime.fromFormat(
+            `${profile.date} ${profile.time}`,
+            'yyyy-MM-dd HH:mm:ss',
+            { zone: profile.timezone }
+          );
+
+          if (!localDateTime.isValid) {
+            console.error(chalk.red(`❌ Invalid datetime in profile: ${localDateTime.invalidReason}`));
+            process.exit(1);
+          }
+
+          dateTime = localDateTime.toUTC().toJSDate();
+
+          console.log(chalk.dim(`Birth Time (Local): ${profile.date} ${profile.time} ${profile.timezone} (${profile.utcOffset || 'N/A'})`));
+          console.log(chalk.dim(`Birth Time (UTC):   ${dateTime.toISOString()}\n`));
+        } else {
+          // Fallback: treat as UTC (backward compatibility)
+          dateTime = new Date(`${profile.date}T${profile.time}Z`);
+          console.log(chalk.yellow('⚠️  Profile lacks timezone information - treating time as UTC'));
+          console.log(chalk.dim('   Run: cd claude-sdk-microservice && node scripts/migrate_timezones.mjs\n'));
+        }
+
         location = {
           latitude: profile.latitude,
           longitude: profile.longitude,

@@ -12,7 +12,9 @@ import * as os from 'os';
 export interface UserProfile {
   name: string;
   date: string;        // YYYY-MM-DD
-  time: string;        // HH:MM:SS
+  time: string;        // HH:MM:SS (LOCAL TIME)
+  timezone?: string;   // IANA timezone (e.g., "Asia/Kolkata")
+  utcOffset?: string;  // Optional: UTC offset at birth time (e.g., "+05:30")
   latitude: number;
   longitude: number;
   location: string;    // City, Country
