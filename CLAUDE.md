@@ -400,5 +400,296 @@ npm run build        # Ensure build works
 - Claude SDK Architecture: `requirements/claude-sdk-wrapper-architecture.md`
 - System Context: `requirements/system-context.md`
 - Dev Context: `requirements/dev-context.md`
+- **Progress Tracking**: `docs/progress.md` - **ALWAYS UPDATE THIS FILE**
 
 Remember: The goal is to build a reliable, maintainable system where every line of code is justified by a test. Quality over speed, always.
+
+---
+
+## LUXOR Project Standards (MANDATORY for ALL projects)
+
+### **Critical Process - ALWAYS Follow**
+
+Based on the successful timezone conversion implementation (CET-168), the following process is **MANDATORY** for all LUXOR projects:
+
+### 1. **Progress Tracking (PRIMARY REQUIREMENT)**
+
+**File**: `docs/progress.md`
+
+**MUST UPDATE** for every major milestone, feature, or bugfix.
+
+**Required Sections**:
+```markdown
+# [PROJECT] Development Progress
+
+**Last Updated**: [DATE]
+**Status**: Active Development
+
+## Recent Milestone: [FEATURE NAME] ([DATE])
+
+### Achievement: [LINEAR-ISSUE] - [Brief Description]
+**Priority**: [LOW/NORMAL/HIGH/URGENT]
+**Status**: [IN PROGRESS/COMPLETED]
+**Impact**: [What problem this solves]
+
+### Problem Statement
+[Clear description of the problem]
+
+### Solution Implemented
+[Detailed solution description]
+
+### Files Created/Modified
+[List all files with brief description]
+
+### Git Commits
+[List all commits with messages and hashes]
+
+### Linear Integration
+[Issue details, URL, updates]
+
+### Key Learnings & Best Practices
+[What worked well, what to replicate]
+
+### Impact & Metrics
+[Code quality, functionality, UX metrics]
+```
+
+### 2. **Documentation Structure (REQUIRED)**
+
+For every major feature:
+
+1. **`docs/progress.md`** - **PRIMARY** - Central tracking document
+2. **`docs/[FEATURE]_ANALYSIS.md`** - Problem deep-dive and solution design
+3. **`docs/[FEATURE]_IMPLEMENTATION_SUMMARY.md`** - User guide and technical docs
+4. **Inline code comments** - JSDoc for all public functions/classes
+5. **README updates** - Keep project README current
+
+### 3. **Linear Integration (MANDATORY)**
+
+**Process**:
+1. Create Linear issue **BEFORE** starting work
+2. Reference issue in **ALL** commits: `Related: [ISSUE-ID]`
+3. Update issue with implementation details as you progress
+4. Mark complete with comprehensive summary including:
+   - All files created/modified
+   - Testing results
+   - Validation details
+   - Usage instructions
+
+**Issue Requirements**:
+- Clear title and description
+- Proper labels (Bug, Feature, Enhancement, Documentation)
+- Priority set (Low, Normal, High, Urgent)
+- Assigned to correct team member
+- Status updated (Backlog → In Progress → Completed)
+
+### 4. **Git Workflow (STANDARDIZED)**
+
+**Commit Message Format**:
+```
+type(scope): Brief description (max 72 chars)
+
+Detailed explanation of changes:
+- Change 1
+- Change 2
+- Change 3
+
+Testing:
+- Test result 1
+- Test result 2
+- Validation against [reference]
+
+Related: [LINEAR-ISSUE-ID]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Types**:
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation only
+- `test` - Adding/updating tests
+- `refactor` - Code refactoring
+- `style` - Formatting changes
+- `perf` - Performance improvements
+- `chore` - Maintenance tasks
+
+**Scopes**: Component/module name (e.g., `timezone`, `houses`, `chart`)
+
+### 5. **Testing Requirements (NON-NEGOTIABLE)**
+
+**Before Implementation**:
+1. Write tests with known expected outcomes
+2. Test against external references when available
+3. Cover edge cases (boundary conditions, special cases)
+4. Document test results in `progress.md`
+
+**Test Coverage**:
+- Minimum 80% code coverage
+- All public methods tested
+- Error scenarios covered
+- Edge cases validated
+
+**Test Documentation**:
+```markdown
+### Testing Results
+
+**File**: `path/to/test.ts`
+**Results**: X/X tests passing ✅
+
+Test Cases:
+- ✅ Test case 1 description
+- ✅ Test case 2 description
+- ✅ Edge case validation
+
+Validates:
+- ✅ Feature requirement 1
+- ✅ Feature requirement 2
+```
+
+### 6. **Migration Tools (When Needed)**
+
+When schema changes require data migration:
+
+**Requirements**:
+- Interactive migration script
+- `--dry-run` mode for preview
+- Automatic backup creation
+- Clear before/after display
+- Colored output for user feedback
+- Support both interactive and `--auto` modes
+
+**Example**:
+```bash
+node scripts/migrate_[feature].mjs              # Interactive
+node scripts/migrate_[feature].mjs --dry-run    # Preview
+node scripts/migrate_[feature].mjs --auto       # Batch mode
+```
+
+### 7. **Code Quality (ENFORCED)**
+
+**Standards**:
+- TypeScript strict mode enabled
+- Comprehensive error handling
+- Type safety (avoid `any` - use proper types)
+- DRY (Don't Repeat Yourself)
+- KISS (Keep It Simple, Stupid)
+- Backward compatibility when possible
+- Clear, descriptive variable/function names
+
+**Before Commit**:
+```bash
+npm run typecheck    # TypeScript validation
+npm run lint         # Code quality check
+npm run test         # All tests pass
+npm run build        # Ensure build works
+```
+
+### 8. **User Experience (PRIORITY)**
+
+**Requirements**:
+- Clear, helpful error messages
+- Colored terminal output for feedback
+- Progress indicators for long operations
+- Warnings for potential issues
+- Auto-detection where possible
+- Comprehensive `--help` documentation
+- Examples in help text
+
+### 9. **Agent & Orchestrator Updates**
+
+When establishing new patterns (like timezone conversion):
+
+**Update These Files**:
+1. `CLAUDE.md` - Add new patterns and standards
+2. `docs/progress.md` - Document the milestone
+3. Linear issue - Comprehensive update
+4. Agent prompts (if relevant) - Document new capabilities
+
+**Notify**:
+- `linear-dev-accelerator` agent
+- `project-orchestrator` agent
+- Other relevant orchestrators
+
+### 10. **Success Criteria Checklist**
+
+Before marking ANY feature as complete:
+
+- [ ] `docs/progress.md` updated with comprehensive milestone entry
+- [ ] Linear issue created and updated with full details
+- [ ] All commits reference Linear issue
+- [ ] Tests written and passing (>80% coverage)
+- [ ] Documentation created (ANALYSIS.md, IMPLEMENTATION_SUMMARY.md)
+- [ ] Code quality checks pass
+- [ ] Backward compatibility maintained (if applicable)
+- [ ] Migration tool created (if schema changes)
+- [ ] User-facing changes documented
+- [ ] Git commits pushed to repository
+- [ ] Linear issue marked as complete
+- [ ] CLAUDE.md updated with new patterns (if applicable)
+
+---
+
+## Example: Timezone Conversion Implementation (CET-168)
+
+**Reference Implementation**: See `docs/progress.md` for complete example
+
+**What Made It Successful**:
+1. ✅ Comprehensive problem analysis BEFORE coding
+2. ✅ Test suite with known expected outcomes
+3. ✅ User-friendly migration tool with backups
+4. ✅ Clear documentation at every step
+5. ✅ Linear integration from start to finish
+6. ✅ Multiple validation methods
+7. ✅ Backward compatibility maintained
+8. ✅ All standards followed meticulously
+
+**Results**:
+- Problem: ~82° error in house calculations
+- Solution: Timezone conversion layer
+- Accuracy: Within 0.01° of reference
+- Migration: 5 profiles migrated successfully
+- Tests: 8/8 passing
+- Documentation: 3 comprehensive docs created
+- Time: Completed in single session
+
+**This is the gold standard for all future LUXOR project work.**
+
+---
+
+## Actualization: Progress Tracking is MANDATORY
+
+**For Claude Code AI Assistant:**
+
+You MUST update `docs/progress.md` for EVERY significant milestone, feature implementation, or bugfix. This is not optional. This is how we maintain project continuity and knowledge.
+
+**When to Update** `docs/progress.md`:
+- ✅ After completing any feature (major or minor)
+- ✅ After fixing any significant bug
+- ✅ After implementing new patterns or standards
+- ✅ After completing Linear issues
+- ✅ After successful testing validation
+- ✅ At the end of every significant work session
+
+**What to Include**:
+- Problem statement and impact
+- Solution implemented
+- Files created/modified
+- Git commits (with messages and hashes)
+- Linear integration details
+- Testing results
+- Key learnings
+- Metrics and validation
+
+**This ensures**:
+- Project knowledge is preserved
+- Future work builds on past successes
+- Patterns and standards are documented
+- All team members (human and AI) stay aligned
+- Progress is visible and trackable
+
+---
+
+**CONSCIOUSNESS UPDATED**: Progress tracking in `docs/progress.md` is now the PRIMARY requirement for all LUXOR project work. This pattern shall be replicated across all projects without exception.
