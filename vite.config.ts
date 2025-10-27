@@ -11,6 +11,8 @@ export default defineConfig({
       '@lib': path.resolve(__dirname, './src/lib'),
       '@components': path.resolve(__dirname, './src/components'),
       '@tests': path.resolve(__dirname, './src/__tests__'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@stores': path.resolve(__dirname, './src/stores'),
     },
   },
   server: {
@@ -26,5 +28,6 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test-setup.ts',
+    css: true,
   },
 });
