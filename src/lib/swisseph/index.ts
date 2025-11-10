@@ -100,7 +100,7 @@ function calculateJulianDay(date: Date): number {
  */
 async function calculateAllBodies(
   julianDay: number,
-  options: {
+  _options: {
     includeChiron: boolean;
     includeLilith: boolean;
     includeNodes: boolean;
@@ -165,8 +165,14 @@ function calculateBody(
 ): CelestialBody {
   const result = swisseph.swe_calc_ut(julianDay, planetId, flags);
 
-  if (result.error || result.rflag < 0) {
-    throw new Error(`Failed to calculate ${name}: ${result.error || 'calculation error'}`);
+  // Type guard: check if result has error property
+  if ('error' in result) {
+    throw new Error(`Failed to calculate ${name}: ${result.error}`);
+  }
+
+  // Type guard: verify we have longitude property (ecliptic coordinates)
+  if (!('longitude' in result)) {
+    throw new Error(`Failed to calculate ${name}: unexpected coordinate system`);
   }
 
   const longitude = result.longitude;
@@ -225,7 +231,8 @@ function calculateHousesAndAngles(
     systemCode
   );
 
-  if (result.error) {
+  // Type guard: check if result has error property
+  if ('error' in result) {
     throw new Error(`Failed to calculate houses: ${result.error}`);
   }
 

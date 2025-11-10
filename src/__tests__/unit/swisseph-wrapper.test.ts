@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { calculateChart } from '@/lib/swisseph';
-import type { GeoCoordinates, ChartData } from '@/lib/swisseph/types';
+import type { GeoCoordinates } from '@/lib/swisseph/types';
 
 describe('Swiss Ephemeris Wrapper', () => {
   // Test data: March 10, 1990, 12:55 PM (noon), Kurnool, India
@@ -228,7 +228,7 @@ describe('Swiss Ephemeris Wrapper', () => {
     it('should have valid house cusp ranges', async () => {
       const chart = await calculateChart(testDate, testLocation);
 
-      chart.houses.cusps.forEach((cusp, index) => {
+      chart.houses.cusps.forEach((cusp) => {
         expect(cusp).toBeGreaterThanOrEqual(0);
         expect(cusp).toBeLessThan(360);
       });

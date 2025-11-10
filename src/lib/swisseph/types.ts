@@ -158,7 +158,12 @@ export type ZodiacSign = typeof ZODIAC_SIGNS[number];
 export function getZodiacSign(longitude: number): ZodiacSign {
   const normalized = ((longitude % 360) + 360) % 360;
   const signIndex = Math.floor(normalized / 30);
-  return ZODIAC_SIGNS[signIndex];
+  const sign = ZODIAC_SIGNS[signIndex];
+  // signIndex is guaranteed to be 0-11, so sign will always be defined
+  if (sign === undefined) {
+    throw new Error(`Invalid sign index: ${signIndex} for longitude: ${longitude}`);
+  }
+  return sign;
 }
 
 /**
