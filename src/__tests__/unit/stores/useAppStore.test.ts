@@ -27,6 +27,7 @@ describe('useAppStore', () => {
 
   it('should set selected planet', () => {
     const planet = DEFAULT_PLANETS[0];
+    if (!planet) throw new Error('DEFAULT_PLANETS[0] is undefined');
 
     act(() => {
       useAppStore.getState().setSelectedPlanet(planet);
@@ -37,6 +38,7 @@ describe('useAppStore', () => {
 
   it('should clear selected planet', () => {
     const planet = DEFAULT_PLANETS[0];
+    if (!planet) throw new Error('DEFAULT_PLANETS[0] is undefined');
 
     act(() => {
       useAppStore.getState().setSelectedPlanet(planet);
@@ -120,6 +122,7 @@ describe('DEFAULT_PLANETS', () => {
 
   it('should have correct planet configuration', () => {
     const mercury = DEFAULT_PLANETS[0];
+    if (!mercury) throw new Error('DEFAULT_PLANETS[0] is undefined');
 
     expect(mercury.id).toBe('mercury');
     expect(mercury.name).toBe('Mercury');

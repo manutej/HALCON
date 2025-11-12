@@ -243,7 +243,10 @@ async function compareHouseSystems(date: Date, location: GeoCoordinates) {
   // Compare house 1 (ASC) across systems
   console.log(chalk.bold.yellow('House 1 (Ascendant):'));
   results.forEach(r => {
-    console.log(chalk.white(`  ${r.system.padEnd(15)}: ${formatDegree(r.chart.houses.cusps[0])}`));
+    const ascendant = r.chart.houses.cusps[0];
+    if (ascendant !== undefined) {
+      console.log(chalk.white(`  ${r.system.padEnd(15)}: ${formatDegree(ascendant)}`));
+    }
   });
   console.log();
 
@@ -254,7 +257,10 @@ async function compareHouseSystems(date: Date, location: GeoCoordinates) {
 
   for (let i = 0; i < 12; i++) {
     const houseNum = (i + 1).toString().padStart(6);
-    const cusps = results.map(r => formatDegree(r.chart.houses.cusps[i]).padEnd(18));
+    const cusps = results.map(r => {
+      const cusp = r.chart.houses.cusps[i];
+      return cusp !== undefined ? formatDegree(cusp).padEnd(18) : 'N/A'.padEnd(18);
+    });
     console.log(chalk.white(`  ${houseNum}  ${cusps.join('')}`));
   }
 

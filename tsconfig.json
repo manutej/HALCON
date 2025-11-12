@@ -51,14 +51,11 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/__tests__/**/*.ts",
-    "src/__tests__/**/*.tsx"
+    "src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "claude-sdk-microservice",
-    "**/*.spec.ts",
-    "**/*.test.ts"
+    "claude-sdk-microservice"
   ]
 }
