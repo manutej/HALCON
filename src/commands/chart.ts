@@ -8,10 +8,11 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { DateTime } from 'luxon';
 import { calculateChart } from '../lib/swisseph/index.js';
-import type { GeoCoordinates, ChartOptions } from '../lib/swisseph/types.js';
-import { getProfileManager } from '../lib/profiles/index.js';
+import type { ChartOptions } from '../lib/swisseph/types.js';
+import { loadProfileOrInput } from '../lib/middleware/profile-loader.js';
+import { formatDegree, formatCoordinates } from '../lib/display/formatters.js';
+import { getPlanetSymbol } from '../lib/display/symbols.js';
 
 const program = new Command();
 
@@ -31,88 +32,18 @@ program
   .option('--json', 'Output as JSON')
   .action(async (dateArg, timeArg, options) => {
     try {
-      let dateTime: Date;
-      let location: GeoCoordinates;
+      // Load profile or parse input
+      const { dateTime, location } = await loadProfileOrInput({
+        dateArg,
+        timeArg,
+        latitude: options.latitude,
+        longitude: options.longitude,
+        location: options.location
+      });
 
-      // Check if dateArg is a profile name (simple word, not a date)
-      const isProfileName = /^[a-zA-Z0-9_-]+$/.test(dateArg) && dateArg !== 'now';
-
-      if (isProfileName) {
-        // Try to load profile
-        const profileManager = getProfileManager();
-        const profile = profileManager.getProfile(dateArg);
-
-        if (!profile) {
-          console.error(chalk.red(`❌ Profile "${dateArg}" not found`));
-          console.log(chalk.yellow('Available profiles:'));
-          const profiles = profileManager.listProfiles();
-          if (profiles.length === 0) {
-            console.log(chalk.gray('  No profiles saved'));
-          } else {
-            profiles.forEach(p => {
-              console.log(chalk.cyan(`  ${p.name} - ${p.location}`));
-            });
-          }
-          process.exit(1);
-        }
-
-        console.log(chalk.green(`✓ Loaded profile: ${profile.name}`));
-
-        // Use profile data with timezone conversion
-        if (profile.timezone) {
-          // Convert local time to UTC
-          const localDateTime = DateTime.fromFormat(
-            `${profile.date} ${profile.time}`,
-            'yyyy-MM-dd HH:mm:ss',
-            { zone: profile.timezone }
-          );
-
-          if (!localDateTime.isValid) {
-            console.error(chalk.red(`❌ Invalid datetime in profile: ${localDateTime.invalidReason}`));
-            process.exit(1);
-          }
-
-          dateTime = localDateTime.toUTC().toJSDate();
-
-          console.log(chalk.dim(`Birth Time (Local): ${profile.date} ${profile.time} ${profile.timezone} (${profile.utcOffset || 'N/A'})`));
-          console.log(chalk.dim(`Birth Time (UTC):   ${dateTime.toISOString()}\n`));
-        } else {
-          // Fallback: treat as UTC (backward compatibility)
-          dateTime = new Date(`${profile.date}T${profile.time}Z`);
-          console.log(chalk.yellow('⚠️  Profile lacks timezone information - treating time as UTC'));
-          console.log(chalk.dim('   Run: cd claude-sdk-microservice && node scripts/migrate_timezones.mjs\n'));
-        }
-
-        location = {
-          latitude: profile.latitude,
-          longitude: profile.longitude,
-          name: profile.location
-        };
-      } else {
-        // Parse date from arguments
-        const dateStr = dateArg === 'now' ? new Date().toISOString() : dateArg;
-        dateTime = new Date(`${dateStr}T${timeArg}`);
-
-        if (isNaN(dateTime.getTime())) {
-          console.error(chalk.red('❌ Invalid date/time format'));
-          console.log(chalk.yellow('Examples:'));
-          console.log(chalk.cyan('  halcon-chart 1990-03-10 12:55:00 --latitude 15.83 --longitude 78.04'));
-          console.log(chalk.cyan('  halcon-chart manu (using saved profile)'));
-          console.log(chalk.cyan('  halcon-chart now'));
-          process.exit(1);
-        }
-
-        // Parse location from options
-        location = {
-          latitude: parseFloat(options.latitude),
-          longitude: parseFloat(options.longitude),
-          name: options.location
-        };
-      }
-
-      // Parse options
+      // Parse chart options
       const chartOptions: ChartOptions = {
-        houseSystem: options.houseSystem as any,
+        houseSystem: options.houseSystem,
         includeChiron: options.chiron !== false,
         includeLilith: options.lilith !== false,
         includeNodes: options.nodes !== false
@@ -154,7 +85,7 @@ function displayChart(chart: any) {
   console.log(chalk.greenBright(`   Date: ${timestamp.toISOString().split('T')[0]}`));
   console.log(chalk.greenBright(`   Time: ${timestamp.toISOString().split('T')[1].split('.')[0]} UTC`));
   console.log(chalk.greenBright(`   Location: ${location.name || 'Unknown'}`));
-  console.log(chalk.greenBright(`   Coordinates: ${location.latitude.toFixed(2)}°N, ${location.longitude.toFixed(2)}°E`));
+  console.log(chalk.greenBright(`   Coordinates: ${formatCoordinates(location.latitude, location.longitude, { precision: 2 })}`));
   console.log();
 
   // Angles
@@ -208,45 +139,6 @@ function displayChart(chart: any) {
   console.log(chalk.bold.cyan('═'.repeat(70)));
   console.log(chalk.green('✨ Chart calculated successfully!'));
   console.log();
-}
-
-/**
- * Format degrees with sign
- */
-function formatDegree(degrees: number): string {
-  const normalized = ((degrees % 360) + 360) % 360;
-  const signIndex = Math.floor(normalized / 30);
-  const signDegree = normalized % 30;
-
-  const signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-                 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-
-  return `${signDegree.toFixed(2)}° ${signs[signIndex]}`;
-}
-
-/**
- * Get planet symbol/emoji
- */
-function getPlanetSymbol(name: string): string {
-  const symbols: Record<string, string> = {
-    'Sun': '☉',
-    'Moon': '☽',
-    'Mercury': '☿',
-    'Venus': '♀',
-    'Mars': '♂',
-    'Jupiter': '♃',
-    'Saturn': '♄',
-    'Uranus': '♅',
-    'Neptune': '♆',
-    'Pluto': '♇',
-    'Chiron': '⚷',
-    'Lilith': '⚸',
-    'Mean Lilith': '⚸',
-    'North Node': '☊',
-    'South Node': '☋'
-  };
-
-  return symbols[name] || '•';
 }
 
 // Run if executed directly
