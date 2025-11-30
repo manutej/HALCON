@@ -17,6 +17,8 @@
     "preview": "vite preview",
     "chart": "tsx src/commands/chart.ts",
     "houses": "tsx src/commands/houses.ts",
+    "transits": "tsx src/commands/transits.ts",
+    "progressions": "tsx src/commands/progressions.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
