@@ -1,0 +1,3 @@
+[submodule "claude-sdk-microservice"]
+	path = claude-sdk-microservice
+	url = https://github.com/manutej/claude-sdk-microservice.git
