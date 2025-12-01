@@ -2,7 +2,14 @@
 # HALCON - Cosmic Productivity Command Center
 # Main command router for all HALCON astrological tools
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Resolve symlinks to get the actual script location
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 # Colors
 CYAN='\033[0;36m'
@@ -38,6 +45,7 @@ show_help() {
     echo -e "  ${CYAN}progressions${NC}   Calculate secondary progressions"
     echo -e "  ${CYAN}aspects${NC}        Show planetary aspects (current or for profile)"
     echo -e "  ${CYAN}houses${NC}         Calculate house cusps for birth chart"
+    echo -e "  ${CYAN}analysis${NC}       Generate AI-powered astrological snapshot"
     echo ""
     echo -e "${GREEN}Usage Examples:${NC}"
     echo -e "  ${YELLOW}Current transits:${NC}"
@@ -68,6 +76,11 @@ show_help() {
     echo "    halcon houses manu --system placidus"
     echo "    halcon houses manu --system whole-sign"
     echo ""
+    echo -e "  ${YELLOW}AI-powered analysis:${NC}"
+    echo "    halcon analysis manu"
+    echo "    halcon analysis manu --type career"
+    echo "    halcon analysis manu --data-only"
+    echo ""
     echo -e "${GREEN}Get Help:${NC}"
     echo "  halcon <command> --help    Show detailed help for a command"
     echo ""
@@ -94,6 +107,9 @@ case "$COMMAND" in
         ;;
     houses)
         exec "$SCRIPT_DIR/houses" "$@"
+        ;;
+    analysis)
+        exec "$SCRIPT_DIR/analysis" "$@"
         ;;
     help|--help|-h|"")
         show_help

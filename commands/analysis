@@ -1,0 +1,53 @@
+#!/bin/bash
+# HALCON Analysis Command - AI-Powered Astrological Snapshot
+# Usage: analysis <profile> [--type TYPE] [--data-only] [--json]
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$SCRIPT_DIR/.."
+
+# Colors
+CYAN='\033[0;36m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Source .env file if it exists
+if [ -f "$PROJECT_DIR/.env" ]; then
+    export $(grep -v '^#' "$PROJECT_DIR/.env" | xargs)
+fi
+
+# Also check home directory for API key
+if [ -z "$ANTHROPIC_API_KEY" ] && [ -f "$HOME/.anthropic_api_key" ]; then
+    export ANTHROPIC_API_KEY=$(cat "$HOME/.anthropic_api_key")
+fi
+
+# Show usage if no args or --help
+if [ $# -eq 0 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo -e "${CYAN}╔════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║     HALCON AI ASTROLOGICAL ANALYSIS        ║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo "Generate comprehensive AI-powered astrological snapshot"
+    echo ""
+    echo -e "${GREEN}Usage:${NC}"
+    echo "  analysis <profile_name> [options]"
+    echo ""
+    echo "Options:"
+    echo "  --type TYPE         Analysis type: general, career, love, spiritual"
+    echo "  --data-only         Show data snapshot without AI interpretation"
+    echo "  --json              Output raw data as JSON"
+    echo ""
+    echo "Examples:"
+    echo "  analysis manu"
+    echo "  analysis manu --type career"
+    echo "  analysis manu --data-only"
+    echo ""
+    echo -e "${YELLOW}Note: Requires ANTHROPIC_API_KEY for AI analysis${NC}"
+    echo -e "${YELLOW}      Set in .env file or ~/.anthropic_api_key${NC}"
+    echo ""
+    exit 0
+fi
+
+# Forward to TypeScript implementation
+cd "$PROJECT_DIR"
+exec npm run analysis --silent -- "$@"

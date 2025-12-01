@@ -19,6 +19,7 @@
     "houses": "tsx src/commands/houses.ts",
     "transits": "tsx src/commands/transits.ts",
     "progressions": "tsx src/commands/progressions.ts",
+    "analysis": "tsx src/commands/analysis.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
