@@ -92,12 +92,78 @@ npm run preview
 
 ### CLI Tools
 
-```bash
-# Calculate birth chart
-npm run chart
+HALCON includes a powerful command-line interface for astrological calculations.
 
-# Calculate house positions
-npm run houses
+#### Option 1: Use npm scripts directly
+
+```bash
+npm run chart -- manu
+npm run transits
+npm run progressions -- manu
+npm run analysis -- manu --data-only
+```
+
+#### Option 2: Set up the `halcon` command (recommended)
+
+```bash
+# Create a symlink to the halcon CLI (adjust path as needed)
+ln -s "$(pwd)/commands/halcon" ~/bin/halcon
+
+# Or add to your PATH in ~/.bashrc or ~/.zshrc:
+export PATH="$PATH:/path/to/HALCON/commands"
+```
+
+#### Available Commands
+
+```bash
+halcon chart <profile>          # Generate natal birth chart
+halcon houses <profile>         # Calculate house cusps
+halcon transits                 # Show current planetary positions
+halcon progressions <profile>   # Calculate secondary progressions
+halcon aspects <profile>        # Show planetary aspects
+halcon analysis <profile>       # AI-powered astrological snapshot
+```
+
+#### Create a Profile
+
+Profiles are stored in `~/.halcon/profiles.json`:
+
+```bash
+# Create the directory
+mkdir -p ~/.halcon
+
+# Create a profile (example)
+cat > ~/.halcon/profiles.json << 'EOF'
+{
+  "manu": {
+    "name": "manu",
+    "date": "1990-03-10",
+    "time": "12:55:00",
+    "latitude": 15.8309,
+    "longitude": 78.0425,
+    "location": "Kurnool, India",
+    "timezone": "Asia/Kolkata",
+    "utcOffset": "+05:30"
+  }
+}
+EOF
+```
+
+#### AI Analysis Setup (Optional)
+
+For AI-powered analysis with Claude:
+
+```bash
+# Option 1: Create .env file in project root
+echo "ANTHROPIC_API_KEY=your-key-here" > .env
+
+# Option 2: Create key file in home directory
+echo "your-key-here" > ~/.anthropic_api_key
+
+# Then run
+halcon analysis manu              # Full AI analysis
+halcon analysis manu --type career # Career-focused
+halcon analysis manu --data-only   # Data only (no API needed)
 ```
 
 ---
